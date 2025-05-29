@@ -1,0 +1,33 @@
+name: Crypto Scraper Automation
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # Runs every 10 minutes
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  scrape_and_store:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          pip install selenium pymongo pandas pytz
+          sudo apt-get update
+          sudo apt-get install -y chromium-chromedriver
+          echo "CHROMEDRIVER_PATH=$(which chromedriver)" >> $GITHUB_ENV
+          echo "CHROME_BIN=$(which chromium-browser)" >> $GITHUB_ENV
+
+      - name: Run Crypto Scraper
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: python scraper.py  # This updates MongoDB Atlas only
+
